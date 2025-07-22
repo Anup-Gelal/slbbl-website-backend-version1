@@ -17,7 +17,7 @@ import {
   ApplyNow, HeadOfficeStaff
 } from "./components";
 import { AdminPanel, LoginPage, ProfilePage,BodAdminPage } from "./pagesserver";
-import { notice } from "./constants";
+
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -30,7 +30,7 @@ const ScrollToTop = () => {
 function App() {
   const topbarRef = useRef(null);
   const [topbarHeight, setTopbarHeight] = useState(0);
-  const [currentNotice] = useState(notice[0]);
+  // const [currentNotice] = useState(notice[0]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,7 +47,7 @@ function App() {
     <BrowserRouter>
     {/*  <div className="relative z-0 min-h-screen animated-gradient">*/}
     <div className="relative z-0 min-h-screen bg-white">
-        <PopupNotice image={currentNotice.image} />
+        <PopupNotice />
         <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
           <Topbar ref={topbarRef} />
           <div
