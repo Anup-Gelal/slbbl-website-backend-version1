@@ -17,7 +17,7 @@ const BodCard = ({ bod, onClick }) => (
       style={{ backgroundColor: `#${bod.iconBg || "E6DEDD"}` }}
     >
       <img
-        src={`http://localhost:8080/${bod.icon}`}
+        src={`https://slbbl-website-backend-version1.onrender.com/${bod.icon}`}
         alt={bod.title}
         className="w-full h-full object-contain"
       />

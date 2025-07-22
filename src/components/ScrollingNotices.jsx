@@ -11,7 +11,7 @@ const ScrollingNotices = () => {
   const fetchNotices = async () => {
     try {
       const response = await axios.get(`${API_BASE}/scrolling-notices`);
-      console.log("API response for notices:", response.data);
+     // console.log("API response for notices:", response.data);
 
       // Defensive: check if response.data is an array
       if (Array.isArray(response.data)) {

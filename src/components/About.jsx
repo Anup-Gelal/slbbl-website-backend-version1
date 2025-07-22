@@ -4,9 +4,15 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { SectionWrapper } from "@/hoc";
+
 const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 //const API_BASE = "http://localhost:8080/api/v1";
+//const API_BASE = import.meta.env.VITE_API_BASE;
 const FILE_BASE = API_BASE.replace(/\/api\/v1\/?$/, "");
+
+
+//const FILE_BASE = import.meta.env.VITE_FILE_BASE;
+
 
 // Helper to correctly build image URLs with /uploads path
 const getImageUrl = (image_url, type) => {

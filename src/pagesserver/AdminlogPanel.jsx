@@ -9,7 +9,7 @@ const AdminLogPanel = () => {
   const [end, setEnd] = useState("");
   const [userID, setUserID] = useState("");
 
-  const BASE_URL = "http://localhost:8080/api/v1/admin";
+  const BASE_URL = "https://slbbl-website-backend-version1.onrender.com/api/v1/admin";
 
   const fetchLogs = async () => {
     try {

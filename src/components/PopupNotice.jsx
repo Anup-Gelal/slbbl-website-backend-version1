@@ -28,7 +28,7 @@ const PopupNotice = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <div className="mb-4">
           <img
-            src={`http://localhost:8080/${notice.image_url}`}
+            src={`https://slbbl-website-backend-version1.onrender.com/${notice.image_url}`}
             alt={notice.notice_name}
             className="w-full h-auto rounded"
           />
