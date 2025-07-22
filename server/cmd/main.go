@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"net/http"
 	"slbbl/internal/config"
 	"slbbl/internal/database"
@@ -312,11 +313,29 @@ admin.DELETE("/scrolling-notices/:id", scrollingNoticeHandler.DeleteScrollingNot
 	admin.POST("/vacancies", vacancyHandler.CreateVacancy)
 admin.DELETE("/vacancies/:id", vacancyHandler.DeleteVacancy)
 
-
-
-
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = cfg.Server.Port 
+	}
+	addr := ":" + port
+
+	log.Printf("🚀 Server running at http://localhost%s", addr)
+
+	// Start server
+	server := &http.Server{
+		Addr:         addr,
+		Handler:      router,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("Server failed: %v", err)
+	}
+
+	/*
 	// Start HTTP server
 	addr := cfg.Server.Host + ":" + cfg.Server.Port
 	log.Printf("🚀 Server running at http://%s", addr)
@@ -330,7 +349,7 @@ admin.DELETE("/vacancies/:id", vacancyHandler.DeleteVacancy)
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal("❌ Server error:", err)
-	}
+	}*/
 }
 
 // Helper: returns basic profile data extracted from JWT claims
