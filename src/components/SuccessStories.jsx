@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Tilt } from 'react-tilt';
 import { SectionWrapper } from '@/hoc';
 
-const API_BASE = 'http://localhost:8080/api/v1';
+const API_BASE = 'https://slbbl-website-backend-version1.onrender.com/api/v1';
 const FILE_BASE = API_BASE.replace(/\/api\/v1\/?$/, '');
 
 const SuccessStoryCard = ({ title, description, fullDescription, images }) => {

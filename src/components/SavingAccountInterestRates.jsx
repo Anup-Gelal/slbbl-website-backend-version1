@@ -69,7 +69,7 @@ const SavingAccountInterestRates = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/v1/saving-interest-rates", {
+        const res = await axios.get("https://slbbl-website-backend-version1.onrender.com/api/v1/saving-interest-rates", {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },

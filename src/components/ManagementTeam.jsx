@@ -5,7 +5,7 @@ import { SectionWrapper } from "../hoc";
 import ProfileModal from "./ProfileModal";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
 const ManagementCard = ({ management, onClick }) => (
   <div
@@ -17,7 +17,7 @@ const ManagementCard = ({ management, onClick }) => (
       style={{ backgroundColor: management.icon_bg || "#ccc" }}
     >
       <img
-        src={`http://localhost:8080/${management.icon}`}
+        src={`https://slbbl-website-backend-version1.onrender.com/${management.icon}`}
         alt={management.title || "Team Member"}
         className="w-full h-full object-contain"
       />

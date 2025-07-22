@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { SectionWrapper } from "../hoc";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
 const AnnualReportCard = ({ reportName, fileLink }) => (
   <div className="w-full sm:w-[360px] bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 p-6 rounded-lg shadow-lg hover:shadow-xl transition">

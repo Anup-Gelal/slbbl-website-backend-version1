@@ -24,7 +24,7 @@ const AllBranches = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get("http://localhost:8080/api/v1/branches");
+      const res = await axios.get("https://your-backend-url.onrender.com/api/v1/branches");
       setBranches(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       setError("Failed to load branches");

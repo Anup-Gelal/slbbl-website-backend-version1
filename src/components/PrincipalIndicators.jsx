@@ -26,7 +26,7 @@ const PrincipalIndicators = () => {
   useEffect(() => {
     const fetchIndicators = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/v1/principal-indicators");
+        const res = await axios.get("https://slbbl-website-backend-version1.onrender.com/api/v1/principal-indicators");
         setIndicators(res.data || []);
       } catch (error) {
         console.error("Failed to fetch indicators", error);

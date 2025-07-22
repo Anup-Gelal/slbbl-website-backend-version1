@@ -3,7 +3,7 @@ import { SectionWrapper } from '@/hoc';
 import axios from 'axios';
 import { FaEye, FaDownload } from 'react-icons/fa';
 
-const API_BASE = 'http://localhost:8080/api/v1';
+const API_BASE = 'https://slbbl-website-backend-version1.onrender.com/api/v1';
 const ITEMS_PER_PAGE = 5;
 
 const NoticeCard = ({ noticeData }) => (
