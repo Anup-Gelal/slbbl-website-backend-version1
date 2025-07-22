@@ -317,7 +317,7 @@ admin.DELETE("/vacancies/:id", vacancyHandler.DeleteVacancy)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = cfg.Server.Port 
+		port = "8080"
 	}
 	addr := ":" + port
 
