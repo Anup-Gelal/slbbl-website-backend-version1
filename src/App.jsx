@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Topbar from "./components/Topbar";
@@ -44,7 +44,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
     {/*  <div className="relative z-0 min-h-screen animated-gradient">*/}
     <div className="relative z-0 min-h-screen bg-white">
         <PopupNotice />
@@ -108,7 +108,7 @@ function App() {
         <ScrollingNotices style={{ position: 'relative', zIndex: 9999 }} />
         <Footer />
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
