@@ -64,7 +64,7 @@ _, b, _, _ := runtime.Caller(0)
 	}))
 
 	// Serve uploaded files - you must have these folders existing with proper permissions
-	router.Static("/uploads", "./server/cmd/uploads")
+	router.Static("/uploads", "./uploads")
 	uploadFinancialReportsPath := "./uploads/financial_reports"
 	uploadAnnualReportsPath := "./uploads/annual_reports"
 	uploadPrincipalIndicatorsPath := "./uploads/principal_indicators"
