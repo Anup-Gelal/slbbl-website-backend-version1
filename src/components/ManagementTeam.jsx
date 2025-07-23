@@ -17,7 +17,7 @@ const ManagementCard = ({ management, onClick }) => (
       style={{ backgroundColor: management.icon_bg || "#ccc" }}
     >
       <img
-        src={`https://slbbl-website-backend-version1.onrender.com/uploads/${management.icon}`}
+        src={`https://slbbl-website-backend-version1.onrender.com/${management.icon}`}
         alt={management.title || "Team Member"}
         className="w-full h-full object-contain"
       />
