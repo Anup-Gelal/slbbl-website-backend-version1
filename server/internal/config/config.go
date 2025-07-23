@@ -60,10 +60,9 @@ func Load() (*Config, error) {
 }
 
 func (c *Config) GetDSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	return fmt.Sprintf("%s:%s@tcp(127.0.0.1:%s)/%s?parseTime=true",
 		c.Database.User,
 		c.Database.Password,
-		c.Database.Host,
 		c.Database.Port,
 		c.Database.DBName,
 	)
