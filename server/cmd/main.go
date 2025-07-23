@@ -77,6 +77,7 @@ _, b, _, _ := runtime.Caller(0)
    uploadServicePath:="./uploads/services"
    uploadSuccessStoriesPath:="./uploads/successstories"
    uploadPopupNoticePath := "./uploads/popup_notices"
+   uploadBodPath:="./uploads/bods"
 
 
 	
@@ -86,7 +87,7 @@ _, b, _, _ := runtime.Caller(0)
 
 	// Initialize handlers, passing DB and upload paths where needed
 	authHandler := handlers.NewAuthHandler(db, jwtSecret)
-	bodHandler := handlers.NewBodHandler(db)
+	bodHandler := handlers.NewBodHandler(db,uploadBodPath)
 	managementHandler := handlers.NewManagementHandler(db)
 	branchHandler := handlers.NewBranchHandler(db)
 	serviceHandler := handlers.NewServiceHandler(db,uploadServicePath)

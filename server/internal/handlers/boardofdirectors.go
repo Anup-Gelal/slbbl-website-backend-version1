@@ -1,6 +1,167 @@
 package handlers
 
 import (
+	"database/sql"
+
+	"net/http"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+type BodHandler struct {
+	DB         *sql.DB
+	UploadPath string
+}
+
+func NewBodHandler(db *sql.DB, uploadPath string) *BodHandler {
+	return &BodHandler{DB: db, UploadPath: uploadPath}
+}
+
+// Create BOD
+func (h *BodHandler) CreateBod(c *gin.Context) {
+	name := c.PostForm("name")
+	position := c.PostForm("position")
+
+	// Upload file
+	file, err := c.FormFile("icon")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Icon file is required"})
+		return
+	}
+
+	filename := filepath.Base(file.Filename)
+	savePath := filepath.Join(h.UploadPath, "bods", filename)
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
+		return
+	}
+
+	// Save relative path
+	iconPath := "/uploads/bods/" + filename
+
+	_, err = h.DB.Exec("INSERT INTO bods (name, position, icon) VALUES (?, ?, ?)", name, position, iconPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert BOD"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "BOD created successfully"})
+}
+
+func (h *BodHandler) GetPublicBods(c *gin.Context) {
+	rows, err := h.DB.Query("SELECT id, name, position, icon FROM bods")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query BODs"})
+		return
+	}
+	defer rows.Close()
+
+	var bods []gin.H
+	for rows.Next() {
+		var id int
+		var name, position, icon string
+		if err := rows.Scan(&id, &name, &position, &icon); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan BOD"})
+			return
+		}
+		bods = append(bods, gin.H{
+			"id":       id,
+			"name":     name,
+			"position": position,
+			"icon":     icon,
+		})
+	}
+
+	c.JSON(http.StatusOK, bods)
+}
+
+
+// Get All BODs
+func (h *BodHandler) GetAllBods(c *gin.Context) {
+	rows, err := h.DB.Query("SELECT id, name, position, icon FROM bods")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query BODs"})
+		return
+	}
+	defer rows.Close()
+
+	var bods []gin.H
+	for rows.Next() {
+		var id int
+		var name, position, icon string
+		if err := rows.Scan(&id, &name, &position, &icon); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan BOD"})
+			return
+		}
+		bods = append(bods, gin.H{
+			"id":       id,
+			"name":     name,
+			"position": position,
+			"icon":     icon,
+		})
+	}
+
+	c.JSON(http.StatusOK, bods)
+}
+
+// Update BOD
+func (h *BodHandler) UpdateBod(c *gin.Context) {
+	id := c.Param("id")
+	name := c.PostForm("name")
+	position := c.PostForm("position")
+
+	// Check if icon is provided
+	file, err := c.FormFile("icon")
+	if err != nil {
+		// Update without icon
+		_, err := h.DB.Exec("UPDATE bods SET name=?, position=? WHERE id=?", name, position, id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update BOD"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "BOD updated (no icon)"})
+		return
+	}
+
+	// Upload new icon
+	filename := filepath.Base(file.Filename)
+	savePath := filepath.Join(h.UploadPath, "bods", filename)
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
+		return
+	}
+
+	iconPath := "/uploads/bods/" + filename
+
+	_, err = h.DB.Exec("UPDATE bods SET name=?, position=?, icon=? WHERE id=?", name, position, iconPath, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update BOD"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "BOD updated successfully"})
+}
+
+// Delete BOD
+func (h *BodHandler) DeleteBod(c *gin.Context) {
+	id := c.Param("id")
+
+	_, err := h.DB.Exec("DELETE FROM bods WHERE id=?", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete BOD"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
+}
+
+/*
+package handlers
+
+import (
     "database/sql"
     "net/http"
     "path/filepath"
@@ -161,7 +322,7 @@ func (h *BodHandler) DeleteBod(c *gin.Context) {
     }
     c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
 }
-
+*/
 /*
 package handlers
 
