@@ -5,27 +5,39 @@ import { textVariant } from "../utils/motion";
 import { SectionWrapper } from "../hoc";
 import ProfileModal from "./ProfileModal";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
-const BodCard = ({ bod, onClick }) => (
-  <div
-    onClick={() => onClick(bod)}
-    className="cursor-pointer bg-gradient-to-br from-green-400 to-blue-400 p-6 rounded-2xl shadow-md flex flex-col items-center hover:opacity-90 transition"
-  >
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const IMAGE_BASE = "https://slbbl-website-backend-version1.onrender.com";
+
+const BodCard = ({ bod, onClick }) => {
+  const imageUrl = `${IMAGE_BASE}/${bod.icon?.replace(/^\/+/, "") || ""}`;
+  const bgColor = bod.iconBg ? `#${bod.iconBg}` : "#E6DEDD";
+
+  return (
     <div
-      className="w-24 h-24 rounded-lg overflow-hidden mb-4"
-      style={{ backgroundColor: `#${bod.iconBg || "E6DEDD"}` }}
+      onClick={() => onClick(bod)}
+      className="cursor-pointer bg-gradient-to-br from-green-400 to-blue-400 p-6 rounded-2xl shadow-md flex flex-col items-center hover:opacity-90 transition"
     >
-      <img
-        src={`https://slbbl-website-backend-version1.onrender.com/${bod.icon}`}
-        alt={bod.title}
-        className="w-full h-full object-contain"
-      />
+      <div
+        className="w-24 h-24 rounded-lg overflow-hidden mb-4 flex items-center justify-center"
+        style={{ backgroundColor: bgColor }}
+      >
+        <img
+          src={imageUrl}
+          alt={bod.title}
+          className="w-full h-full object-contain"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/fallback.jpg";
+          }}
+        />
+      </div>
+      <h3 className="text-lg font-bold text-white text-center">{bod.title}</h3>
+      <p className="text-sm text-green-50 text-center mt-1">{bod.description}</p>
     </div>
-    <h3 className="text-lg font-bold text-white text-center">{bod.title}</h3>
-    <p className="text-sm text-green-50 text-center mt-1">{bod.description}</p>
-  </div>
-);
+  );
+};
+
 const BoardOfDirectors = () => {
   const [bods, setBods] = useState([]);
   const [selectedBod, setSelectedBod] = useState(null);
@@ -36,7 +48,7 @@ const BoardOfDirectors = () => {
     const fetchBods = async () => {
       try {
         const response = await axios.get(`${API_BASE}/bods`);
-        setBods(response.data);
+        setBods(response.data || []);
       } catch (err) {
         setError("Failed to fetch board members.");
       } finally {
@@ -48,7 +60,7 @@ const BoardOfDirectors = () => {
   }, []);
 
   const chairperson = bods.find((b) =>
-    b.description.toLowerCase().includes("chairperson")
+    b.description?.toLowerCase().includes("chairperson")
   );
   const otherBods = bods.filter((b) => b !== chairperson);
 
@@ -98,7 +110,6 @@ const BoardOfDirectors = () => {
 };
 
 export default SectionWrapper(BoardOfDirectors, "boardofdirectors");
-
 
 {/*
 // src/components/BoardOfDirectors.jsx
