@@ -263,7 +263,7 @@ const ManagementAdminPage = () => {
                   <td className="border px-3 py-2">
                     {m.icon ? (
                       <img
-                        src={`https://slbbl-website-backend-version1.onrender.com/${m.icon}`}
+                        src={`https://slbbl-website-backend-version1.onrender.com/uploads/${m.icon}`}
                         alt={m.title}
                         className="w-16 h-16 object-contain rounded"
                       />
