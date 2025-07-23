@@ -325,7 +325,7 @@ admin.DELETE("/vacancies/:id", vacancyHandler.DeleteVacancy)
 	}
 	addr := ":" + port
 
-	log.Printf("🚀 Server running at http://127.0.0.1%s", addr)
+	log.Printf("🚀 Server running at http://localhost%s", addr)
 
 	// Start server
 	server := &http.Server{
