@@ -1,3 +1,5 @@
+
+/*
 package handlers
 
 import (
@@ -50,61 +52,39 @@ func (h *BodHandler) CreateBod(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "BOD created successfully"})
 }
 
-func (h *BodHandler) GetPublicBods(c *gin.Context) {
-	rows, err := h.DB.Query("SELECT id, name, position, icon FROM bods")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query BODs"})
+
+// GET /api/v1/bods - public BODs
+func GetAllBods(c *gin.Context) {
+	var bods []models.BOD
+
+	if err := models.DB.Find(&bods).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching BODs"})
 		return
 	}
-	defer rows.Close()
 
-	var bods []gin.H
-	for rows.Next() {
-		var id int
-		var name, position, icon string
-		if err := rows.Scan(&id, &name, &position, &icon); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan BOD"})
-			return
-		}
-		bods = append(bods, gin.H{
-			"id":       id,
-			"name":     name,
-			"position": position,
-			"icon":     icon,
-		})
+	for i := range bods {
+		bods[i].Image = "/uploads/bods/" + filepath.Base(bods[i].Image)
 	}
 
 	c.JSON(http.StatusOK, bods)
 }
 
+// GET /api/v1/admin/bods - admin panel
+func AdminGetAllBods(c *gin.Context) {
+	var bods []models.BOD
 
-// Get All BODs
-func (h *BodHandler) GetAllBods(c *gin.Context) {
-	rows, err := h.DB.Query("SELECT id, name, position, icon FROM bods")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query BODs"})
+	if err := models.DB.Order("created_at desc").Find(&bods).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching BODs for admin"})
 		return
 	}
-	defer rows.Close()
 
-	var bods []gin.H
-	for rows.Next() {
-		var id int
-		var name, position, icon string
-		if err := rows.Scan(&id, &name, &position, &icon); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to scan BOD"})
-			return
-		}
-		bods = append(bods, gin.H{
-			"id":       id,
-			"name":     name,
-			"position": position,
-			"icon":     icon,
-		})
+	for i := range bods {
+		bods[i].Image = "/uploads/bods/" + filepath.Base(bods[i].Image)
 	}
 
 	c.JSON(http.StatusOK, bods)
 }
+
 
 // Update BOD
 func (h *BodHandler) UpdateBod(c *gin.Context) {
@@ -156,9 +136,9 @@ func (h *BodHandler) DeleteBod(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
-}
+}*/
 
-/*
+
 package handlers
 
 import (
@@ -322,7 +302,7 @@ func (h *BodHandler) DeleteBod(c *gin.Context) {
     }
     c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
 }
-*/
+
 /*
 package handlers
 
