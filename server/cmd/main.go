@@ -52,9 +52,9 @@ _, b, _, _ := runtime.Caller(0)
 
 	// CORS middleware config
 	router.Use(cors.New(cors.Config{
-		//AllowOrigins:     []string{"http://localhost:5173"}, 
+		AllowOrigins:     []string{"http://localhost:5173"}, 
 	
-		AllowOrigins:     []string{"https://slbbl-banepa.onrender.com"},
+		// AllowOrigins:     []string{"https://slbbl-banepa.onrender.com"},
 		// AllowOrigins:     []string{"https://slbbl-frontend.onrender.com"},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
@@ -72,11 +72,11 @@ _, b, _, _ := runtime.Caller(0)
 	uploadStaffPath := "./uploads/staff_training_reports"
 	uploadNoticePath:="./uploads/notices"
 	uploadDownloadsPath := "./uploads/downloads"
-uploadSpokesPath := "./uploads/spokespersons"
-uploadProductPath:="./uploads/products"
-uploadServicePath:="./uploads/services"
-uploadSuccessStoriesPath:="./uploads/successstories"
-uploadPopupNoticePath := "./uploads/popup_notices"
+    uploadSpokesPath := "./uploads/spokespersons"
+    uploadProductPath:="./uploads/products"
+   uploadServicePath:="./uploads/services"
+   uploadSuccessStoriesPath:="./uploads/successstories"
+   uploadPopupNoticePath := "./uploads/popup_notices"
 
 
 	

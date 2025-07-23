@@ -73,7 +73,7 @@ func (h *BodHandler) CreateBod(c *gin.Context) {
     file, err := c.FormFile("icon")
     if err == nil {
         filename := filepath.Base(file.Filename)
-        iconPath = "uploads/bods/" + filename
+        iconPath = "server/cmd/uploads/bods/" + filename
         if err := c.SaveUploadedFile(file, iconPath); err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
             return
@@ -124,7 +124,7 @@ func (h *BodHandler) UpdateBod(c *gin.Context) {
     file, err := c.FormFile("icon")
     if err == nil {
         filename := filepath.Base(file.Filename)
-        iconPath = "uploads/bods/" + filename
+        iconPath = "server/cmd/uploads/bods/" + filename
         if err := c.SaveUploadedFile(file, iconPath); err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
             return
