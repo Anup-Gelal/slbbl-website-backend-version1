@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
 
 const PopupNotice = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -28,7 +28,7 @@ const PopupNotice = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <div className="mb-4">
           <img
-            src={`https://slbbl-website-backend-version1.onrender.com/${notice.image_url}`}
+            src={`http://localhost:8080/${notice.image_url}`}
             alt={notice.notice_name}
             className="w-full h-auto rounded"
           />

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
-const IMAGE_BASE = "https://slbbl-website-backend-version1.onrender.com";
+const API_BASE = "http://localhost:8080/api/v1";
 
 const initialForm = {
   title: "",
@@ -36,9 +35,9 @@ const BodAdminPage = () => {
       const res = await axios.get(`${API_BASE}/admin/bods`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setBods(res.data);
+      setBods(Array.isArray(res.data) ? res.data : []);
       setError("");
-    } catch (err) {
+    } catch {
       setError("Failed to load Board of Directors");
     } finally {
       setLoading(false);
@@ -141,8 +140,8 @@ const BodAdminPage = () => {
   const filteredBods = bods
     .filter(
       (bod) =>
-        bod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bod.description.toLowerCase().includes(searchQuery.toLowerCase())
+        bod.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bod.description?.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       const aValue = a[sortField]?.toLowerCase?.() || "";
@@ -153,10 +152,7 @@ const BodAdminPage = () => {
     });
 
   const totalPages = Math.ceil(filteredBods.length / itemsPerPage);
-  const currentData = filteredBods.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const currentData = filteredBods.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded shadow mt-6">
@@ -221,7 +217,7 @@ const BodAdminPage = () => {
             disabled={loading}
             className="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-6 rounded"
           >
-            {loading ? "Saving..." : editingId ? "Update Board Member" : "Add Board Member"}
+            {loading ? "Saving..." : editingId ? "Update Member" : "Add Member"}
           </button>
           {editingId && (
             <button
@@ -242,95 +238,69 @@ const BodAdminPage = () => {
           placeholder="Search by title or description..."
           className="px-4 py-2 border border-gray-300 rounded bg-white w-full max-w-sm"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
         />
       </div>
 
-      {loading && <p className="text-center">Loading...</p>}
-
-      {!loading && currentData.length === 0 && (
+      {loading ? (
+        <p className="text-center">Loading...</p>
+      ) : currentData.length === 0 ? (
         <p className="text-center text-gray-500">No board members found.</p>
-      )}
-
-      {currentData.length > 0 && (
+      ) : (
         <div>
           <table className="w-full table-auto border-collapse border border-gray-300">
             <thead>
               <tr className="bg-green-100 text-green-800">
-                <th
-                  onClick={() => handleSort("title")}
-                  className="cursor-pointer border border-gray-300 px-3 py-2"
-                >
-                  Title
+                <th onClick={() => handleSort("title")} className="cursor-pointer border px-3 py-2">
+                  Title {sortField === "title" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
                 </th>
-                <th
-                  onClick={() => handleSort("description")}
-                  className="cursor-pointer border border-gray-300 px-3 py-2"
-                >
-                  Description
+                <th onClick={() => handleSort("description")} className="cursor-pointer border px-3 py-2">
+                  Description {sortField === "description" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
                 </th>
-                <th className="border border-gray-300 px-3 py-2">Icon Bg</th>
-                <th className="border border-gray-300 px-3 py-2">Icon Preview</th>
-                <th className="border border-gray-300 px-3 py-2">Actions</th>
+                <th className="border px-3 py-2">Icon Bg</th>
+                <th className="border px-3 py-2">Icon Preview</th>
+                <th className="border px-3 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {currentData.map((bod) => {
-                // Clean path
-                const iconPath = bod.icon ? bod.icon.replace(/^\/+/, "") : null;
-
-                let imageUrl = null;
-                if (iconPath) {
-                  if (iconPath.includes("server/cmd/")) {
-                    imageUrl = `${IMAGE_BASE}/${iconPath}`;
-                  } else {
-                    imageUrl = `${IMAGE_BASE}/server/cmd/uploads/bods/${iconPath}`;
-                  }
-                }
-
-                console.log("Image URL:", imageUrl);
-
-                return (
-                  <tr key={bod.id} className="hover:bg-green-50">
-                    <td className="border border-gray-300 px-3 py-2">{bod.title}</td>
-                    <td className="border border-gray-300 px-3 py-2">{bod.description}</td>
-                    <td className="border border-gray-300 px-3 py-2">{bod.iconBg}</td>
-                    <td className="border border-gray-300 px-3 py-2">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={bod.title}
-                          className="w-16 h-16 object-contain rounded"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/fallback.jpg";
-                          }}
-                        />
-                      ) : (
-                        <span className="text-sm text-gray-500">No Icon</span>
-                      )}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-2 space-x-2">
-                      <button
-                        onClick={() => startEditing(bod)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(bod.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {currentData.map((bod) => (
+                <tr key={bod.id} className="hover:bg-green-50">
+                  <td className="border px-3 py-2">{bod.title}</td>
+                  <td className="border px-3 py-2">{bod.description}</td>
+                  <td className="border px-3 py-2">{bod.iconBg}</td>
+                  <td className="border px-3 py-2">
+                    {bod.icon ? (
+                      <img
+                        src={`http://localhost:8080/${bod.icon.startsWith("uploads") ? bod.icon : `uploads/bods/${bod.icon}`}`}
+                        alt={bod.title}
+                        className="w-16 h-16 object-contain rounded"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-500">No Icon</span>
+                    )}
+                  </td>
+                  <td className="border px-3 py-2 space-x-2">
+                    <button
+                      onClick={() => startEditing(bod)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(bod.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
-          {/* Pagination */}
           <div className="mt-6 flex justify-center gap-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
@@ -354,12 +324,11 @@ const BodAdminPage = () => {
 
 export default BodAdminPage;
 
-{
-  /*
+{/*
   import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
 const IMAGE_BASE = "https://slbbl-website-backend-version1.onrender.com";
 
 const initialForm = {

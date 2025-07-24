@@ -6,7 +6,7 @@ import { textVariant } from "../utils/motion";
 import { styles } from "../style";
 import { BallCanvas } from "./canvas";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -32,7 +32,7 @@ const Products = () => {
   return (
     <>
       <motion.div variants={textVariant()}>
-        <p className={`${styles.sectionSubText} text-center font-poppins`}>
+        <p className= "text-green-600 text-center font-poppins">
           Our Products
         </p>
       </motion.div>

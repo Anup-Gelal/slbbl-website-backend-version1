@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Tilt } from 'react-tilt';
 import { SectionWrapper } from '@/hoc';
 
-const API_BASE = 'https://slbbl-website-backend-version1.onrender.com/api/v1';
+const API_BASE = 'http://localhost:8080/api/v1';
 const FILE_BASE = API_BASE.replace(/\/api\/v1\/?$/, '');
 
 const SuccessStoryCard = ({ title, description, fullDescription, images }) => {
@@ -25,7 +25,9 @@ const SuccessStoryCard = ({ title, description, fullDescription, images }) => {
     <div>
       <Tilt options={{ max: 45, scale: 1, speed: 450 }} className="bg-gradient-to-r from-purple-500 to-indigo-600 p-5 rounded-2xl sm:w-[480px] w-full">
         <div className="relative w-full h-[230px]">
-          <img src={`${FILE_BASE}${images[0]}`} alt={title} className="w-full h-full object-contain rounded-2xl" />
+          {images.length > 0 && (
+            <img src={`${FILE_BASE}${images[0]}`} alt={title} className="w-full h-full object-contain rounded-2xl" />
+          )}
         </div>
         <div className="mt-5">
           <h3 className="text-2xl font-bold text-white">{title}</h3>
@@ -74,7 +76,14 @@ const SuccessStories = () => {
 
   useEffect(() => {
     axios.get(`${API_BASE}/success-stories`)
-      .then(res => setStories(res.data || []))
+      .then(res => {
+        // Normalize full_description -> fullDescription for each story
+        const normalized = (res.data || []).map(story => ({
+          ...story,
+          fullDescription: story.full_description || '',
+        }));
+        setStories(normalized);
+      })
       .catch(err => {
         console.error("Failed to fetch success stories:", err);
         setError("Unable to load stories");

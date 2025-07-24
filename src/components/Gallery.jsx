@@ -3,7 +3,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
 const ITEMS_PER_PAGE = 6;
 
 const GalleryCard = ({ title, date, images, openImageModal }) => (
@@ -23,7 +23,7 @@ const GalleryCard = ({ title, date, images, openImageModal }) => (
         images.map((img, i) => (
           <img
             key={i}
-            src={`https://slbbl-website-backend-version1.onrender.com${img}`}
+            src={`http://localhost:8080${img}`}
             alt={`${title}-img-${i}`}
             className="rounded-lg object-cover w-full h-28"
           />
@@ -166,7 +166,7 @@ const Gallery = () => {
             </button>
 
             <img
-              src={`https://slbbl-website-backend-version1.onrender.com${modalImages[modalIndex]}`}
+              src={`http://localhost:8080${modalImages[modalIndex]}`}
               alt={`Slide ${modalIndex + 1}`}
               className="w-full h-auto max-h-[80vh] object-contain rounded-lg shadow-lg"
             />
@@ -182,7 +182,7 @@ const Gallery = () => {
               {modalImages.map((img, i) => (
                 <img
                   key={i}
-                  src={`https://slbbl-website-backend-version1.onrender.com${img}`}
+                  src={`http://localhost:8080${img}`}
                   alt={`thumb-${i}`}
                   onClick={() => setModalIndex(i)}
                   className={`w-16 h-16 object-cover rounded-md cursor-pointer border-4 ${

@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
+const ITEMS_PER_PAGE = 6;
 
 const initialForm = {
   title: "",
   description: "",
   iconFile: null,
 };
-
-const ITEMS_PER_PAGE = 6;
 
 const ServiceAdminPage = () => {
   const [services, setServices] = useState([]);
@@ -100,6 +99,7 @@ const ServiceAdminPage = () => {
     setEditingId(s.id);
     setError("");
     setSuccess("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
@@ -115,10 +115,12 @@ const ServiceAdminPage = () => {
     }
   };
 
+  // Filter services by search query
   const filteredServices = services.filter((s) =>
     s.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination
   const totalPages = Math.ceil(filteredServices.length / ITEMS_PER_PAGE);
   const paginatedServices = filteredServices.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -128,9 +130,11 @@ const ServiceAdminPage = () => {
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Services</h2>
+
       {error && <p className="text-red-600 mb-4">{error}</p>}
       {success && <p className="text-green-600 mb-4">{success}</p>}
 
+      {/* Service Form */}
       <form onSubmit={handleSubmit} className="space-y-4 mb-10">
         <div>
           <label className="block font-medium text-gray-700">Title</label>
@@ -140,6 +144,7 @@ const ServiceAdminPage = () => {
             onChange={handleInputChange}
             required
             className="w-full border px-3 py-2 rounded bg-white"
+            placeholder="Service title"
           />
         </div>
         <div>
@@ -151,6 +156,7 @@ const ServiceAdminPage = () => {
             required
             rows={3}
             className="w-full border px-3 py-2 rounded bg-white text-green-800"
+            placeholder="Service description"
           />
         </div>
         <div>
@@ -199,6 +205,7 @@ const ServiceAdminPage = () => {
         />
       </div>
 
+      {/* Services List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginatedServices.map((s) => (
           <div key={s.id} className="border p-4 rounded shadow">
@@ -206,9 +213,10 @@ const ServiceAdminPage = () => {
             <p className="text-sm text-gray-700 mb-2">{s.description}</p>
             {s.icon && (
               <img
-                src={`http://localhost:8080/${s.icon}`}
+                src={`http://localhost:8080/${s.icon.replace(/^\/+/, "")}`}
                 alt={s.title}
                 className="w-16 h-16 object-contain"
+                onError={(e) => (e.currentTarget.style.display = "none")}
               />
             )}
             <div className="mt-3 flex gap-2">
@@ -229,7 +237,7 @@ const ServiceAdminPage = () => {
         ))}
       </div>
 
-      {/* Pagination */}
+      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="mt-6 flex justify-center gap-2">
           {Array.from({ length: totalPages }, (_, i) => (

@@ -1,8 +1,23 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1/admin";
+const FILE_BASE = "http://localhost:8080"; // Base URL for images
 const ITEMS_PER_PAGE = 6;
+
+// Helper to build correct image URL
+const getImageUrl = (imgPath) => {
+  if (!imgPath) return "";
+  if (imgPath.startsWith("http")) return imgPath; // absolute url already
+  if (imgPath.startsWith("/uploads/spokespersons/")) {
+    return `${FILE_BASE}${imgPath}`;
+  }
+  if (imgPath.startsWith("uploads/spokespersons/")) {
+    return `${FILE_BASE}/${imgPath}`;
+  }
+  // fallback: treat as filename only
+  return `${FILE_BASE}/uploads/spokespersons/${imgPath}`;
+};
 
 const initialForm = {
   name: "",
@@ -24,10 +39,16 @@ const AdminSpokespersons = () => {
 
   const fetchSpokespersons = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/admin/footer-spokespersons`, {
+      const res = await axios.get(`${API_BASE}/footer-spokespersons`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setList(res.data || []);
+
+      // Sort ascending by createdAt (adjust field name if needed)
+      const sorted = (res.data || []).sort((a, b) =>
+        new Date(a.createdAt) - new Date(b.createdAt)
+      );
+
+      setList(sorted);
     } catch {
       setError("Failed to load spokespersons.");
     }
@@ -79,13 +100,13 @@ const AdminSpokespersons = () => {
       };
       if (editingId) {
         await axios.put(
-          `${API_BASE}/admin/footer-spokespersons/${editingId}`,
+          `${API_BASE}/footer-spokespersons/${editingId}`,
           formData,
           config
         );
         setSuccess("Spokesperson updated.");
       } else {
-        await axios.post(`${API_BASE}/admin/footer-spokespersons`, formData, config);
+        await axios.post(`${API_BASE}/footer-spokespersons`, formData, config);
         setSuccess("Spokesperson added.");
       }
       resetForm();
@@ -111,7 +132,7 @@ const AdminSpokespersons = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this spokesperson?")) return;
     try {
-      await axios.delete(`${API_BASE}/admin/footer-spokespersons/${id}`, {
+      await axios.delete(`${API_BASE}/footer-spokespersons/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Deleted.");
@@ -142,6 +163,7 @@ const AdminSpokespersons = () => {
         className="space-y-4 mb-8"
         encType="multipart/form-data"
       >
+        {/* Form inputs omitted for brevity, same as before */}
         <div>
           <label className="block font-medium text-gray-700">Name</label>
           <input
@@ -251,7 +273,7 @@ const AdminSpokespersons = () => {
               <td className="border px-4 py-2 text-center">
                 {item.imagePath && (
                   <img
-                    src={item.imagePath}
+                    src={getImageUrl(item.imagePath)}
                     alt={item.name}
                     className="mx-auto w-12 h-12 rounded-full object-cover"
                   />

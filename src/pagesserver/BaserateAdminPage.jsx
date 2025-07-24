@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
 const ITEMS_PER_PAGE = 6;
 
 const AdminBaseRates = () => {
@@ -93,23 +93,7 @@ const AdminBaseRates = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const renderAverage = (index) => {
-    if (index + 2 < filteredRates.length) {
-      const r1 = filteredRates[index].rate;
-      const r2 = filteredRates[index + 1].rate;
-      const r3 = filteredRates[index + 2].rate;
-      const avg = ((r1 + r2 + r3) / 3).toFixed(2);
-      return (
-        <li className="italic text-sm text-gray-500 mt-1 mb-3">
-          → Average of {filteredRates[index].month},{" "}
-          {filteredRates[index + 1].month}, and {filteredRates[index + 2].month}:{" "}
-          <span className="font-semibold">{avg}%</span>
-        </li>
-      );
-    }
-    return null;
-  };
-
+  
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Base Rates</h2>
@@ -198,7 +182,6 @@ const AdminBaseRates = () => {
                 </button>
               </div>
             </li>
-            {renderAverage(index)}
           </React.Fragment>
         ))}
       </ul>

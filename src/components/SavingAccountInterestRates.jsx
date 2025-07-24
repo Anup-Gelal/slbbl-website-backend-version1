@@ -69,7 +69,7 @@ const SavingAccountInterestRates = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("https://slbbl-website-backend-version1.onrender.com/api/v1/saving-interest-rates", {
+        const res = await axios.get("http://localhost:8080/api/v1/saving-interest-rates", {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
@@ -88,12 +88,12 @@ const SavingAccountInterestRates = () => {
       {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
 
       <motion.div variants={fadeIn('0.1', '0.3', 1, 2)}>
-        <p className={styles.sectionSubText}>Saving Account Interest Rate</p>
+        <p className="text-green-600">Saving Account Interest Rate</p>
       </motion.div>
 
       <motion.p
         variants={fadeIn('0.1', '0.3', 1, 2)}
-        className="mt-4 text-secondary text-[17px] max-w-3xl leading-[30px]"
+        className="mt-4 text-green-600 text-[17px] max-w-3xl leading-[30px]"
       >
         Here are the current saving account interest rates available at SLBBL.
       </motion.p>

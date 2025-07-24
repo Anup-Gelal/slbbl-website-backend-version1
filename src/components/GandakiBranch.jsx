@@ -24,7 +24,7 @@ const GandakiBranch = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get(`https://slbbl-website-backend-version1.onrender.com/${PROVINCE}`);
+      const res = await axios.get(`http://localhost:8080/${PROVINCE}`);
       setBranches(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       setError("Failed to load branches for province");

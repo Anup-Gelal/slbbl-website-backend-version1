@@ -52,7 +52,7 @@ _, b, _, _ := runtime.Caller(0)
 
 	// CORS middleware config
 	router.Use(cors.New(cors.Config{
-		// AllowOrigins:     []string{"http://localhost:5173"}, 
+		//AllowOrigins:     []string{"http://localhost:5173"}, 
 	
 		AllowOrigins:     []string{"https://slbbl-banepa.onrender.com"},
 		// AllowOrigins:     []string{"https://slbbl-frontend.onrender.com"},
@@ -64,7 +64,7 @@ _, b, _, _ := runtime.Caller(0)
 	}))
 
 	// Serve uploaded files - you must have these folders existing with proper permissions
-	router.Static("/uploads", "./server/cmd/uploads")
+	router.Static("/uploads", "./uploads")
 	uploadFinancialReportsPath := "./uploads/financial_reports"
 	uploadAnnualReportsPath := "./uploads/annual_reports"
 	uploadPrincipalIndicatorsPath := "./uploads/principal_indicators"
@@ -75,7 +75,7 @@ _, b, _, _ := runtime.Caller(0)
     uploadSpokesPath := "./uploads/spokespersons"
     uploadProductPath:="./uploads/products"
    uploadServicePath:="./uploads/services"
-   uploadSuccessStoriesPath:="./uploads/successstories"
+   uploadSuccessStoriesPath:="./uploads/success-stories"
    uploadPopupNoticePath := "./uploads/popup_notices"
  //  uploadBodPath:="./uploads/bods"
 

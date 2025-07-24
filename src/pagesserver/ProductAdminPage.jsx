@@ -1,35 +1,32 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const API_BASE = "http://localhost:8080/api/v1";
+const ITEMS_PER_PAGE = 6;
 
 const initialForm = {
   title: "",
+  iconBg: "",
   description: "",
   iconFile: null,
 };
-
-const ITEMS_PER_PAGE = 6;
 
 const ProductAdminPage = () => {
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortAsc, setSortAsc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const token = localStorage.getItem("token");
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(`${API_BASE}/products`);
       setProducts(res.data || []);
     } catch (err) {
-      setError("Failed to load products");
+      console.error("Failed to fetch products:", err);
     }
   };
 
@@ -41,143 +38,150 @@ const ProductAdminPage = () => {
     setForm(initialForm);
     setEditingId(null);
     setError("");
-    setSuccess("");
   };
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "iconFile") {
-      setForm((f) => ({ ...f, iconFile: files[0] }));
+      setForm((prev) => ({ ...prev, iconFile: files[0] }));
     } else {
-      setForm((f) => ({ ...f, [name]: value }));
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
-    setSuccess("");
-
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("description", form.description);
-    if (form.iconFile) formData.append("icon", form.iconFile);
+    setLoading(true);
 
     try {
-      if (editingId) {
-        await axios.put(`${API_BASE}/admin/products/${editingId}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setSuccess("Product updated successfully.");
-      } else {
-        await axios.post(`${API_BASE}/admin/products`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setSuccess("Product created successfully.");
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("iconBg", form.iconBg);
+      formData.append("description", form.description);
+      if (form.iconFile) {
+        formData.append("icon", form.iconFile);
       }
-      resetForm();
+
+      if (editingId) {
+        await axios.put(`${API_BASE}/admin/products/${editingId}`, formData);
+      } else {
+        const res = await axios.post(`${API_BASE}/admin/products`, formData);
+        setProducts((prev) => [...prev, res.data]);
+      }
+
       fetchProducts();
+      resetForm();
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to save product");
+      console.error("Error submitting product:", err);
+      setError("Failed to submit product");
     } finally {
       setLoading(false);
     }
   };
 
-  const startEditing = (p) => {
+  const handleEdit = (product) => {
+    setEditingId(product.id);
     setForm({
-      title: p.title,
-      description: p.description,
+      title: product.title,
+      iconBg: product.iconBg,
+      description: product.description,
       iconFile: null,
     });
-    setEditingId(p.id);
-    setError("");
-    setSuccess("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Delete this product?")) return;
     try {
-      await axios.delete(`${API_BASE}/admin/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSuccess("Product deleted successfully.");
-      fetchProducts();
+      await axios.delete(`${API_BASE}/admin/products/${id}`);
+      setProducts((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
-      setError("Failed to delete product");
+      console.error("Delete failed:", err);
     }
   };
 
-  const filteredProducts = products.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSorted = products
+    .filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (sortAsc) return a.title.localeCompare(b.title);
+      else return b.title.localeCompare(a.title);
+    });
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const paginatedProducts = filteredProducts.slice(
+  const totalPages = Math.ceil(filteredSorted.length / ITEMS_PER_PAGE);
+  const paginated = filteredSorted.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Products</h2>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-      {success && <p className="text-green-600 mb-4">{success}</p>}
+    <div className="p-6 max-w-5xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Product Admin</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mb-10">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 bg-white border p-4 rounded shadow mb-8"
+      >
         <div>
-          <label className="block font-medium text-gray-700">Title</label>
+          <label className="block font-semibold">Title</label>
           <input
             name="title"
             value={form.title}
-            onChange={handleInputChange}
+            onChange={handleChange}
+            className="w-full bg-white border p-2 rounded"
             required
-            className="w-full border px-3 py-2 rounded bg-white"
           />
         </div>
+
         <div>
-          <label className="block font-medium text-gray-700">Description</label>
+          <label className="block font-semibold">Icon Background</label>
+          <input
+            name="iconBg"
+            value={form.iconBg}
+            onChange={handleChange}
+            className="w-full border bg-white p-2 rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold">Description</label>
           <textarea
             name="description"
             value={form.description}
-            onChange={handleInputChange}
-            required
+            onChange={handleChange}
+            className="w-full border bg-white p-2 rounded"
             rows={3}
-            className="w-full border px-3 py-2 rounded bg-white text-green-800"
           />
         </div>
+
         <div>
-          <label className="block font-medium text-gray-700">
-            Icon Image {editingId && " (upload to change)"}
+          <label className="block font-semibold">
+            Upload Icon {editingId && "(Upload to replace)"}
           </label>
           <input
             type="file"
             name="iconFile"
             accept="image/*"
-            onChange={handleInputChange}
-            className="w-full"
+            onChange={handleChange}
+            className="w-full bg-white"
           />
         </div>
+
+        {error && <p className="text-red-500">{error}</p>}
+
         <div className="flex gap-4">
           <button
             type="submit"
             disabled={loading}
-            className="bg-green-700 text-white px-5 py-2 rounded hover:bg-green-800"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            {editingId ? "Update" : "Create"} Product
+            {loading ? "Saving..." : editingId ? "Update" : "Create"} Product
           </button>
           {editingId && (
             <button
               type="button"
               onClick={resetForm}
-              className="bg-gray-400 text-white px-5 py-2 rounded hover:bg-gray-500"
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -185,42 +189,53 @@ const ProductAdminPage = () => {
         </div>
       </form>
 
-      {/* Search Bar */}
-      <div className="mb-6">
+      {/* Filter and Sort Controls */}
+      <div className="mb-4 flex flex-col sm:flex-row gap-4 justify-between">
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder="Search by title..."
+          className="border p-2 rounded bg-white w-full sm:w-1/2 "
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
             setCurrentPage(1);
           }}
-          className="w-full px-4 py-2 border border-gray-300 rounded bg-white"
         />
+
+        <button
+          onClick={() => setSortAsc((prev) => !prev)}
+          className="text-sm text-blue-600 underline"
+        >
+          Sort: {sortAsc ? "A-Z" : "Z-A"}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {paginatedProducts.map((p) => (
-          <div key={p.id} className="border p-4 rounded shadow">
-            <h3 className="font-bold text-lg text-blue-700">{p.title}</h3>
-            <p className="text-sm text-gray-700 mb-2">{p.description}</p>
+      {/* Products */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {paginated.map((p) => (
+          <div key={p.id} className="bg-white border rounded p-4 shadow">
             {p.icon && (
               <img
-                src={`http://localhost:8080/${p.icon}`}
+                src={`http://localhost:8080/${p.icon.replace(/^\/+/, "")}`}
                 alt={p.title}
-                className="w-16 h-16 object-contain"
+                className="w-20 h-20 object-contain mb-2"
               />
             )}
-            <div className="mt-3 flex gap-2">
+            <h4 className="font-semibold">{p.title}</h4>
+            <p className="text-sm text-gray-600">{p.description}</p>
+            {p.iconBg && (
+              <p className="text-xs mt-1 text-gray-500">Icon BG: {p.iconBg}</p>
+            )}
+            <div className="flex gap-2 mt-3">
               <button
-                onClick={() => startEditing(p)}
-                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                onClick={() => handleEdit(p)}
+                className="text-blue-600 hover:underline text-sm"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(p.id)}
-                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                className="text-red-600 hover:underline text-sm"
               >
                 Delete
               </button>
@@ -238,8 +253,8 @@ const ProductAdminPage = () => {
               onClick={() => setCurrentPage(i + 1)}
               className={`px-4 py-2 rounded border ${
                 currentPage === i + 1
-                  ? "bg-green-700 text-white"
-                  : "bg-white text-green-700 border-green-700"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-blue-600 border-blue-600"
               }`}
             >
               {i + 1}

@@ -1,42 +1,32 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { textVariant } from "../utils/motion";
 import { SectionWrapper } from "../hoc";
 import ProfileModal from "./ProfileModal";
+import axios from "axios";
 
+const API_BASE = "http://localhost:8080/api/v1";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
-const IMAGE_BASE = "https://slbbl-website-backend-version1.onrender.com";
-
-const BodCard = ({ bod, onClick }) => {
-  const imageUrl = `${IMAGE_BASE}/${bod.icon?.replace(/^\/+/, "") || ""}`;
-  const bgColor = bod.iconBg ? `#${bod.iconBg}` : "#E6DEDD";
-
-  return (
+const BodCard = ({ bod, onClick }) => (
+  <div
+    onClick={() => onClick(bod)}
+    className="cursor-pointer bg-gradient-to-br from-green-400 to-blue-400 p-6 rounded-2xl shadow-md flex flex-col items-center hover:opacity-90 transition"
+  >
     <div
-      onClick={() => onClick(bod)}
-      className="cursor-pointer bg-gradient-to-br from-green-400 to-blue-400 p-6 rounded-2xl shadow-md flex flex-col items-center hover:opacity-90 transition"
+      className="w-24 h-24 rounded-lg overflow-hidden mb-4"
+      style={{ backgroundColor: bod.icon_bg || "#ccc" }}
     >
-      <div
-        className="w-24 h-24 rounded-lg overflow-hidden mb-4 flex items-center justify-center"
-        style={{ backgroundColor: bgColor }}
-      >
-        <img
-          src={imageUrl}
-          alt={bod.title}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/fallback.jpg";
-          }}
-        />
-      </div>
-      <h3 className="text-lg font-bold text-white text-center">{bod.title}</h3>
-      <p className="text-sm text-green-50 text-center mt-1">{bod.description}</p>
+      <img
+        src={`http://localhost:8080/${bod.icon?.startsWith("uploads") ? bod.icon : `uploads/bods/${bod.icon || ""}`}`}
+        alt={bod.title || "Board Member"}
+        className="w-full h-full object-contain"
+        onError={(e) => (e.target.src = "/fallback-icon.png")} // Optional fallback icon
+      />
     </div>
-  );
-};
+    <h3 className="text-lg font-bold text-green-100 text-center">{bod.title}</h3>
+    <p className="text-sm text-green-50 text-center mt-1">{bod.description}</p>
+  </div>
+);
 
 const BoardOfDirectors = () => {
   const [bods, setBods] = useState([]);
@@ -48,24 +38,27 @@ const BoardOfDirectors = () => {
     const fetchBods = async () => {
       try {
         const response = await axios.get(`${API_BASE}/bods`);
-        setBods(response.data || []);
+        setBods(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
+        console.error("Failed to fetch BOD:", err);
         setError("Failed to fetch board members.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchBods();
   }, []);
 
+  // Separate chairperson and others by description keyword (case insensitive)
   const chairperson = bods.find((b) =>
     b.description?.toLowerCase().includes("chairperson")
   );
   const otherBods = bods.filter((b) => b !== chairperson);
 
-  if (loading) return <p className="text-center text-white mt-10">Loading...</p>;
-  if (error) return <p className="text-center text-red-400 mt-10">{error}</p>;
+  if (loading)
+    return <p className="text-center text-white mt-10">Loading...</p>;
+  if (error)
+    return <p className="text-center text-red-400 mt-10">{error}</p>;
 
   return (
     <>
@@ -75,11 +68,13 @@ const BoardOfDirectors = () => {
         </p>
       </motion.div>
 
-      {/* Chairperson Section */}
+      {/* Chairperson */}
       {chairperson && (
         <section className="mt-10 px-4">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-lg max-w-3xl mx-auto">
-            <h2 className="text-white text-xl font-semibold mb-6 text-center">Chairperson</h2>
+            <h2 className="text-white text-xl font-semibold mb-6 text-center">
+              Chairperson
+            </h2>
             <div className="flex justify-center">
               <div className="w-full sm:w-2/3 md:w-1/2">
                 <BodCard bod={chairperson} onClick={setSelectedBod} />
@@ -89,19 +84,23 @@ const BoardOfDirectors = () => {
         </section>
       )}
 
-      {/* Other Board Members */}
-      <section className="mt-16 px-4">
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-lg">
-          <h2 className="text-white text-xl font-semibold mb-6 text-center">Board Members</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {otherBods.map((bod, index) => (
-              <BodCard key={`bod-${index}`} bod={bod} onClick={setSelectedBod} />
-            ))}
+      {/* Other Members */}
+      {otherBods.length > 0 && (
+        <section className="mt-16 px-4">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-lg">
+            <h2 className="text-white text-xl font-semibold mb-6 text-center">
+              Board Members
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              {otherBods.map((bod) => (
+                <BodCard key={bod.id || bod.title} bod={bod} onClick={setSelectedBod} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Modal for Profile */}
+      {/* Modal */}
       {selectedBod && (
         <ProfileModal data={selectedBod} onClose={() => setSelectedBod(null)} />
       )}

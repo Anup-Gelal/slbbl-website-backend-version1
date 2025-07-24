@@ -1,13 +1,33 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1/admin";
+const API_BASE = "http://localhost:8080/api/v1/admin";
+const FILE_BASE = "http://localhost:8080"; // Base URL for images
 const ITEMS_PER_PAGE = 6;
+
+// Helper to build correct image URL avoiding duplicated paths
+const getImageUrl = (imgPath) => {
+  if (!imgPath) return "";
+  let path = imgPath.trim();
+
+  // Remove duplicated "/uploads/galleries/uploads/galleries/" prefix if present
+  const duplicatePrefix = "/uploads/galleries/uploads/galleries/";
+  if (path.toLowerCase().startsWith(duplicatePrefix)) {
+    path = path.substring("/uploads/galleries".length);
+  }
+
+  // Ensure leading slash
+  if (!path.startsWith("/")) {
+    path = "/" + path;
+  }
+
+  return `${FILE_BASE}${path}`;
+};
 
 const initialForm = {
   title: "",
   date: "",
-  images: [], // FileList or File[] for upload
+  images: [],
 };
 
 const AdminGalleries = () => {
@@ -19,6 +39,7 @@ const AdminGalleries = () => {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
   const token = localStorage.getItem("token");
 
   const fetchGalleries = async () => {
@@ -66,13 +87,10 @@ const AdminGalleries = () => {
 
     try {
       if (editingId) {
-        // Update metadata only (title, date)
+        // Update gallery metadata only, images not updated here
         await axios.put(
           `${API_BASE}/galleries/${editingId}`,
-          {
-            title: form.title,
-            date: form.date,
-          },
+          { title: form.title, date: form.date },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setSuccess("Gallery updated successfully.");
@@ -82,6 +100,7 @@ const AdminGalleries = () => {
           setLoading(false);
           return;
         }
+
         const formData = new FormData();
         formData.append("title", form.title);
         formData.append("date", form.date);
@@ -94,10 +113,8 @@ const AdminGalleries = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-          onUploadProgress: (e) => {
-            // optional: add upload progress here if needed
-          },
         });
+
         setSuccess("Gallery created successfully.");
       }
 
@@ -115,7 +132,7 @@ const AdminGalleries = () => {
     setForm({
       title: gallery.title,
       date: gallery.date,
-      images: [], // optional: keep old images if none uploaded
+      images: [],
     });
     setError("");
     setSuccess("");
@@ -134,6 +151,7 @@ const AdminGalleries = () => {
     }
   };
 
+  // Filter and paginate galleries
   const filtered = galleries.filter((g) =>
     g.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -202,6 +220,7 @@ const AdminGalleries = () => {
         </div>
       </form>
 
+      {/* Search input */}
       <div className="mb-4">
         <input
           type="text"
@@ -215,6 +234,7 @@ const AdminGalleries = () => {
         />
       </div>
 
+      {/* Gallery cards */}
       <div className="space-y-4">
         {paginated.map((gallery) => (
           <div key={gallery.id} className="border p-4 rounded shadow">
@@ -224,11 +244,14 @@ const AdminGalleries = () => {
               {gallery.imagePaths?.map((img, idx) => (
                 <img
                   key={idx}
-                  src={img}
+                  src={getImageUrl(img)}
                   alt={`gallery-${idx}`}
                   className="h-20 rounded object-cover"
                 />
               ))}
+              {!gallery.imagePaths?.length && (
+                <span className="text-gray-500 italic">No images available</span>
+              )}
             </div>
             <div className="mt-2 flex gap-2">
               <button
@@ -246,8 +269,12 @@ const AdminGalleries = () => {
             </div>
           </div>
         ))}
+        {paginated.length === 0 && (
+          <p className="text-center text-gray-500">No galleries found.</p>
+        )}
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-6 flex justify-center gap-2">
           {Array.from({ length: totalPages }, (_, i) => (

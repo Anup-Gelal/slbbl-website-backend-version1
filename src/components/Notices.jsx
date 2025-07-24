@@ -1,100 +1,154 @@
-import React, { useEffect, useState } from 'react';
-import { SectionWrapper } from '@/hoc';
-import axios from 'axios';
-import { FaEye, FaDownload } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import { SectionWrapper } from "../hoc";
+import axios from "axios";
+import { FaEye, FaDownload } from "react-icons/fa";
 
-const API_BASE = 'https://slbbl-website-backend-version1.onrender.com/api/v1';
-const ITEMS_PER_PAGE = 5;
+const API_BASE = "http://localhost:8080/api/v1";
+const FILE_BASE = "http://localhost:8080";
+const ITEMS_PER_PAGE = 6;
 
-const NoticeCard = ({ noticeData }) => (
-  <div className="w-full sm:w-[360px] bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 p-6 rounded-lg shadow-lg transition-all hover:shadow-xl">
-    <img
-      src={noticeData.image}
-      alt={noticeData.noticeName}
-      className="w-full h-48 object-cover rounded-t-lg mb-4"
-    />
-    <h3 className="text-xl font-semibold text-white mb-2">{noticeData.noticeName}</h3>
-    <p className="text-white font-medium">{noticeData.dateOfIssue}</p>
-    <div className="mt-4 flex gap-4">
-      <a
-        href={noticeData.details}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 px-4 py-2 bg-white text-blue-700 font-semibold rounded hover:bg-blue-100 transition"
-      >
-        <FaEye /> View
-      </a>
-      <a
-        href={noticeData.details}
-        download
-        className="flex items-center gap-2 px-4 py-2 bg-white text-blue-700 font-semibold rounded hover:bg-blue-100 transition"
-      >
-        <FaDownload /> Download
-      </a>
-    </div>
-  </div>
-);
+// Utility to format date in YYYY-MM-DD
+const formatDate = (input) => {
+  const date = new Date(input);
+  if (isNaN(date)) return "";
+  return date.toISOString().split("T")[0];
+};
 
-const Notices = () => {
-  const [notices, setNotices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    axios.get(`${API_BASE}/notices`)
-      .then(res => setNotices(res.data || []))
-      .catch(() => console.error('Failed to fetch notices'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const totalPages = Math.ceil(notices.length / ITEMS_PER_PAGE);
-  const currentNotices = notices.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+const NoticeCard = ({ notice }) => {
+  const fileUrl = `${FILE_BASE}${notice.fileLink}`;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen mt-20">
-      <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">Notices</h2>
-      <p className="text-lg text-gray-800 text-center max-w-2xl mx-auto mb-8">
-        Browse through the latest notices issued by the organization.
+    <div className="w-full sm:w-[360px] bg-white border border-gray-200 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 className="text-lg font-semibold text-blue-800 mb-2">{notice.noticeName}</h3>
+
+      <p className="text-sm text-gray-500 mb-3">
+        प्रकाशित मिति: {formatDate(notice.dateofissue)}
+        
       </p>
 
-      <div className="flex flex-wrap gap-8 justify-center">
-        {loading ? (
-          <p className="text-center mt-10 text-gray-500">Loading notices...</p>
-        ) : (
-          currentNotices.map((notice, idx) => (
-            <NoticeCard key={notice.id || idx} noticeData={notice} />
-          ))
-        )}
-      </div>
+      {notice.imageUrl && (
+        <img
+          src={notice.imageUrl}
+          alt={notice.noticeName}
+          className="w-full h-40 object-cover rounded-md border mb-4"
+        />
+      )}
 
-      <div className="flex justify-center mt-8 gap-2">
-        <button
-          onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-blue-700 text-white rounded-l-md disabled:opacity-50"
+      <div className="flex flex-col gap-2">
+        <a
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
         >
-          Previous
-        </button>
-        <span className="px-4 py-2 text-lg text-gray-700">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-blue-700 text-white rounded-r-md disabled:opacity-50"
+          <FaEye /> View Notice
+        </a>
+        <a
+          href={fileUrl}
+          download
+          className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium"
         >
-          Next
-        </button>
+          <FaDownload /> Download Notice
+        </a>
       </div>
     </div>
   );
 };
 
-export default SectionWrapper(Notices, 'notices');
+const Notices = () => {
+  const [notices, setNotices] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const itemsPerPage = ITEMS_PER_PAGE;
 
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/notices`);
+        setNotices(res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch notices", error);
+      }
+    };
+
+    fetchNotices();
+  }, []);
+
+  // Filter by text match (in name or date)
+  const filteredNotices = notices.filter((notice) => {
+    const keyword = searchText.toLowerCase();
+    return (
+      notice.noticeName.toLowerCase().includes(keyword) ||
+      formatDate(notice.dateofissue).includes(keyword)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
+  const currentNotices = filteredNotices.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen mt-20">
+      <h2 className="text-2xl font-bold text-green-700 mb-6 text-center">Public Notices</h2>
+
+      <p className="text-lg text-green-800 text-center max-w-2xl mx-auto mb-8">
+        Official documents and announcements published by our organization.
+      </p>
+
+      {/* Search */}
+      <div className="flex justify-center mb-10">
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => {
+            setSearchText(e.target.value);
+            setCurrentPage(1);
+          }}
+          placeholder="Search by name or date (YYYY-MM-DD)"
+          className="w-full max-w-md p-2 bg-blue-100 border border-gray-300 rounded-lg"
+        />
+      </div>
+
+      {/* Cards */}
+      <div className="flex flex-wrap gap-8 justify-center">
+        {currentNotices.length > 0 ? (
+          currentNotices.map((notice) => (
+            <NoticeCard key={notice.id} notice={notice} />
+          ))
+        ) : (
+          <p className="text-center text-gray-700">No notices found.</p>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10 gap-2">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-green-700 text-white rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2 text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-green-700 text-white rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SectionWrapper(Notices, "notices");
 
 {/*
 import React, { useState } from 'react';

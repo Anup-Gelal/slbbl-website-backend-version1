@@ -1,144 +1,177 @@
-
-/*
 package handlers
 
 import (
-	"database/sql"
+    "database/sql"
+    "net/http"
+    "path/filepath"
+    "strconv"
+    "strings"
 
-	"net/http"
-	"path/filepath"
-
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
+    "slbbl/internal/models"
 )
 
 type BodHandler struct {
-	DB         *sql.DB
-	UploadPath string
+    DB *sql.DB
 }
 
-func NewBodHandler(db *sql.DB, uploadPath string) *BodHandler {
-	return &BodHandler{DB: db, UploadPath: uploadPath}
+func NewBodHandler(db *sql.DB) *BodHandler {
+    return &BodHandler{DB: db}
 }
 
-// Create BOD
+func sanitizeIconPath(icon string) string {
+    // Normalize path separators
+    icon = filepath.ToSlash(icon)
+    // Find "uploads/bods/" substring
+    idx := strings.Index(icon, "uploads/bods/")
+    if idx != -1 {
+        return icon[idx:]
+    }
+    // Return original if not found
+    return icon
+}
+
+// GET /bods - Public route to fetch all BODs
+func (h *BodHandler) GetPublicBods(c *gin.Context) {
+    rows, err := h.DB.Query("SELECT id, title, icon, icon_bg, description FROM board_of_directors")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    defer rows.Close()
+
+    bods := []models.BoardOfDirector{}
+    for rows.Next() {
+        var bod models.BoardOfDirector
+        if err := rows.Scan(&bod.ID, &bod.Title, &bod.Icon, &bod.IconBg, &bod.Description); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+        bod.Icon = sanitizeIconPath(bod.Icon)
+        bods = append(bods, bod)
+    }
+    c.JSON(http.StatusOK, bods)
+}
+
+// GET /admin/bods - List all BODs
+func (h *BodHandler) GetAllBods(c *gin.Context) {
+    rows, err := h.DB.Query("SELECT id, title, icon, icon_bg, description FROM board_of_directors")
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    defer rows.Close()
+
+    bods := []models.BoardOfDirector{}
+    for rows.Next() {
+        var bod models.BoardOfDirector
+        if err := rows.Scan(&bod.ID, &bod.Title, &bod.Icon, &bod.IconBg, &bod.Description); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+        bod.Icon = sanitizeIconPath(bod.Icon)
+        bods = append(bods, bod)
+    }
+    c.JSON(http.StatusOK, bods)
+}
+
+// POST /admin/bods - Create a new BOD
 func (h *BodHandler) CreateBod(c *gin.Context) {
-	name := c.PostForm("name")
-	position := c.PostForm("position")
+    title := c.PostForm("title")
+    iconBg := c.PostForm("icon_bg")
+    description := c.PostForm("description")
 
-	// Upload file
-	file, err := c.FormFile("icon")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Icon file is required"})
-		return
-	}
+    var iconPath string
+    file, err := c.FormFile("icon")
+    if err == nil {
+        filename := filepath.Base(file.Filename)
+        iconPath = "uploads/bods/" + filename
+        if err := c.SaveUploadedFile(file, iconPath); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
+            return
+        }
+    } else {
+        iconPath = ""
+    }
 
-	filename := filepath.Base(file.Filename)
-	savePath := filepath.Join(h.UploadPath, "bods", filename)
+    res, err := h.DB.Exec("INSERT INTO board_of_directors (title, icon, icon_bg, description) VALUES (?, ?, ?, ?)",
+        title, iconPath, iconBg, description)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    id, _ := res.LastInsertId()
 
-	if err := c.SaveUploadedFile(file, savePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
-		return
-	}
-
-	// Save relative path
-	iconPath := "/uploads/bods/" + filename
-
-	_, err = h.DB.Exec("INSERT INTO bods (name, position, icon) VALUES (?, ?, ?)", name, position, iconPath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert BOD"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{"message": "BOD created successfully"})
+    c.JSON(http.StatusCreated, gin.H{
+        "id":          id,
+        "title":       title,
+        "icon":        sanitizeIconPath(iconPath),
+        "icon_bg":     iconBg,
+        "description": description,
+    })
 }
 
-
-// GET /api/v1/bods - public BODs
-func GetAllBods(c *gin.Context) {
-	var bods []models.BOD
-
-	if err := models.DB.Find(&bods).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching BODs"})
-		return
-	}
-
-	for i := range bods {
-		bods[i].Image = "/uploads/bods/" + filepath.Base(bods[i].Image)
-	}
-
-	c.JSON(http.StatusOK, bods)
-}
-
-// GET /api/v1/admin/bods - admin panel
-func AdminGetAllBods(c *gin.Context) {
-	var bods []models.BOD
-
-	if err := models.DB.Order("created_at desc").Find(&bods).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching BODs for admin"})
-		return
-	}
-
-	for i := range bods {
-		bods[i].Image = "/uploads/bods/" + filepath.Base(bods[i].Image)
-	}
-
-	c.JSON(http.StatusOK, bods)
-}
-
-
-// Update BOD
+// PUT /admin/bods/:id - Update existing BOD
 func (h *BodHandler) UpdateBod(c *gin.Context) {
-	id := c.Param("id")
-	name := c.PostForm("name")
-	position := c.PostForm("position")
+    idStr := c.Param("id")
+    id, err := strconv.Atoi(idStr)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid BOD ID"})
+        return
+    }
 
-	// Check if icon is provided
-	file, err := c.FormFile("icon")
-	if err != nil {
-		// Update without icon
-		_, err := h.DB.Exec("UPDATE bods SET name=?, position=? WHERE id=?", name, position, id)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update BOD"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"message": "BOD updated (no icon)"})
-		return
-	}
+    var exists bool
+    err = h.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM board_of_directors WHERE id=?)", id).Scan(&exists)
+    if err != nil || !exists {
+        c.JSON(http.StatusNotFound, gin.H{"error": "BOD not found"})
+        return
+    }
 
-	// Upload new icon
-	filename := filepath.Base(file.Filename)
-	savePath := filepath.Join(h.UploadPath, "bods", filename)
+    title := c.PostForm("title")
+    iconBg := c.PostForm("icon_bg")
+    description := c.PostForm("description")
 
-	if err := c.SaveUploadedFile(file, savePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
-		return
-	}
+    var iconPath string
+    file, err := c.FormFile("icon")
+    if err == nil {
+        filename := filepath.Base(file.Filename)
+        iconPath = "uploads/bods/" + filename
+        if err := c.SaveUploadedFile(file, iconPath); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
+            return
+        }
+        _, err = h.DB.Exec("UPDATE board_of_directors SET title=?, icon=?, icon_bg=?, description=? WHERE id=?",
+            title, iconPath, iconBg, description, id)
+    } else {
+        _, err = h.DB.Exec("UPDATE board_of_directors SET title=?, icon_bg=?, description=? WHERE id=?",
+            title, iconBg, description, id)
+    }
 
-	iconPath := "/uploads/bods/" + filename
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
 
-	_, err = h.DB.Exec("UPDATE bods SET name=?, position=?, icon=? WHERE id=?", name, position, iconPath, id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update BOD"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "BOD updated successfully"})
+    c.JSON(http.StatusOK, gin.H{"message": "BOD updated successfully"})
 }
 
-// Delete BOD
+// DELETE /admin/bods/:id - Delete BOD by ID
 func (h *BodHandler) DeleteBod(c *gin.Context) {
-	id := c.Param("id")
+    idStr := c.Param("id")
+    id, err := strconv.Atoi(idStr)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid BOD ID"})
+        return
+    }
+    _, err = h.DB.Exec("DELETE FROM board_of_directors WHERE id=?", id)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
+}
 
-	_, err := h.DB.Exec("DELETE FROM bods WHERE id=?", id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete BOD"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
-}*/
-
-
+/*
 package handlers
 
 import (
@@ -214,7 +247,7 @@ func (h *BodHandler) CreateBod(c *gin.Context) {
     file, err := c.FormFile("icon")
     if err == nil {
         filename := filepath.Base(file.Filename)
-        iconPath = "server/cmd/uploads/bods/" + filename
+        iconPath = "uploads/bods/" + filename
         if err := c.SaveUploadedFile(file, iconPath); err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
             return
@@ -265,7 +298,7 @@ func (h *BodHandler) UpdateBod(c *gin.Context) {
     file, err := c.FormFile("icon")
     if err == nil {
         filename := filepath.Base(file.Filename)
-        iconPath = "server/cmd/uploads/bods/" + filename
+        iconPath = "uploads/bods/" + filename
         if err := c.SaveUploadedFile(file, iconPath); err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload icon"})
             return
@@ -301,132 +334,5 @@ func (h *BodHandler) DeleteBod(c *gin.Context) {
         return
     }
     c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
-}
-
-/*
-package handlers
-
-import (
-	"database/sql"
-	"net/http"
-	"path/filepath"
-
-	"github.com/gin-gonic/gin"
-	"slbbl/internal/models"
-)
-
-type BodHandler struct {
-	DB *sql.DB
-}
-
-func NewBodHandler(db *sql.DB) *BodHandler {
-	return &BodHandler{DB: db}
-}
-
-// GET /admin/bods
-func (h *BodHandler) GetAllBods(c *gin.Context) {
-	rows, err := h.DB.Query(`SELECT id, title, icon, icon_bg, description FROM board_of_directors`)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer rows.Close()
-
-	var bods []models.BoardOfDirector
-	for rows.Next() {
-		var bod models.BoardOfDirector
-		if err := rows.Scan(&bod.ID, &bod.Title, &bod.Icon, &bod.IconBg, &bod.Description); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		bods = append(bods, bod)
-	}
-
-	c.JSON(http.StatusOK, bods)
-}
-
-// POST /admin/bods
-func (h *BodHandler) CreateBod(c *gin.Context) {
-	title := c.PostForm("title")
-	iconBg := c.PostForm("icon_bg")
-	description := c.PostForm("description")
-
-	var iconPath string
-	file, err := c.FormFile("icon")
-	if err == nil {
-		filename := filepath.Base(file.Filename)
-		iconPath = "uploads/bods/" + filename
-		if err := c.SaveUploadedFile(file, iconPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image"})
-			return
-		}
-	}
-
-	query := `INSERT INTO board_of_directors (title, icon, icon_bg, description) VALUES (?, ?, ?, ?)`
-	result, err := h.DB.Exec(query, title, iconPath, iconBg, description)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	id, _ := result.LastInsertId()
-
-	c.JSON(http.StatusCreated, gin.H{
-		"id":          id,
-		"title":       title,
-		"icon":        iconPath,
-		"icon_bg":     iconBg,
-		"description": description,
-	})
-}
-
-// PUT /admin/bods/:id
-func (h *BodHandler) UpdateBod(c *gin.Context) {
-	id := c.Param("id")
-
-	// Check existence
-	var exists bool
-	err := h.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM board_of_directors WHERE id = ?)", id).Scan(&exists)
-	if err != nil || !exists {
-		c.JSON(http.StatusNotFound, gin.H{"error": "BOD not found"})
-		return
-	}
-
-	title := c.PostForm("title")
-	iconBg := c.PostForm("icon_bg")
-	description := c.PostForm("description")
-
-	var iconPath string
-	file, err := c.FormFile("icon")
-	if err == nil {
-		filename := filepath.Base(file.Filename)
-		iconPath = "uploads/bods/" + filename
-		if err := c.SaveUploadedFile(file, iconPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image"})
-			return
-		}
-		_, err = h.DB.Exec(`UPDATE board_of_directors SET title = ?, icon = ?, icon_bg = ?, description = ? WHERE id = ?`,
-			title, iconPath, iconBg, description, id)
-	} else {
-		_, err = h.DB.Exec(`UPDATE board_of_directors SET title = ?, icon_bg = ?, description = ? WHERE id = ?`,
-			title, iconBg, description, id)
-	}
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "BOD updated successfully"})
-}
-
-// DELETE /admin/bods/:id
-func (h *BodHandler) DeleteBod(c *gin.Context) {
-	id := c.Param("id")
-	_, err := h.DB.Exec("DELETE FROM board_of_directors WHERE id = ?", id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "BOD deleted successfully"})
 }
 */
