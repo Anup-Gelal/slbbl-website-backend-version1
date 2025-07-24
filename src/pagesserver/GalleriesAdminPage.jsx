@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1/admin";
-const FILE_BASE = "http://localhost:8080"; // Base URL for images
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1/admin";
+const FILE_BASE = "https://slbbl-website-backend-version1.onrender.com"; // Base URL for images
 const ITEMS_PER_PAGE = 6;
 
 // Helper to build correct image URL avoiding duplicated paths

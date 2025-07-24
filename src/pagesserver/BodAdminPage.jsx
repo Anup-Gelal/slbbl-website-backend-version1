@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
 const initialForm = {
   title: "",
@@ -274,7 +274,7 @@ const BodAdminPage = () => {
                   <td className="border px-3 py-2">
                     {bod.icon ? (
                       <img
-                        src={`http://localhost:8080/${bod.icon.startsWith("uploads") ? bod.icon : `uploads/bods/${bod.icon}`}`}
+                        src={`https://slbbl-website-backend-version1.onrender.com/${bod.icon.startsWith("uploads") ? bod.icon : `uploads/bods/${bod.icon}`}`}
                         alt={bod.title}
                         className="w-16 h-16 object-contain rounded"
                       />
@@ -328,7 +328,7 @@ export default BodAdminPage;
   import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 const IMAGE_BASE = "https://slbbl-website-backend-version1.onrender.com";
 
 const initialForm = {

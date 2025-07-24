@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { SectionWrapper } from "../hoc";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 const ITEMS_PER_PAGE = 5;
 
 const VacancyCard = ({ vacancyDate, postedDate, expiryDate, fileLink }) => (
@@ -11,7 +11,7 @@ const VacancyCard = ({ vacancyDate, postedDate, expiryDate, fileLink }) => (
     <p className="text-sm text-white mb-1">Posted: {postedDate}</p>
     <p className="text-sm text-white mb-4">Expires: {expiryDate}</p>
     <a
-      href={`http://localhost:8080${fileLink}`}
+      href={`https://slbbl-website-backend-version1.onrender.com${fileLink}`}
       target="_blank"
       rel="noopener noreferrer"
       className="text-white hover:text-indigo-200 font-medium"

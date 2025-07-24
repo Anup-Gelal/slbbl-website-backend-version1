@@ -17,7 +17,7 @@ const ProfileModal = ({ data, onClose }) => (
           style={{ backgroundColor: data.iconBg ? `#${data.iconBg}` : "#ffffff" }}
         >
           <img
-            src={`http://localhost:8080/${data.icon}`}
+            src={`https://slbbl-website-backend-version1.onrender.com/${data.icon}`}
             alt={data.title}
             className="w-full h-full object-contain"
           />

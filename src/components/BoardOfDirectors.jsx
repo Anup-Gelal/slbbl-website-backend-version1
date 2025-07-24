@@ -5,7 +5,7 @@ import { SectionWrapper } from "../hoc";
 import ProfileModal from "./ProfileModal";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
 const BodCard = ({ bod, onClick }) => (
   <div
@@ -17,7 +17,7 @@ const BodCard = ({ bod, onClick }) => (
       style={{ backgroundColor: bod.icon_bg || "#ccc" }}
     >
       <img
-        src={`http://localhost:8080/${bod.icon?.startsWith("uploads") ? bod.icon : `uploads/bods/${bod.icon || ""}`}`}
+        src={`https://slbbl-website-backend-version1.onrender.com/${bod.icon?.startsWith("uploads") ? bod.icon : `uploads/bods/${bod.icon || ""}`}`}
         alt={bod.title || "Board Member"}
         className="w-full h-full object-contain"
         onError={(e) => (e.target.src = "/fallback-icon.png")} // Optional fallback icon

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 const ITEMS_PER_PAGE = 6;
 
 const initialForm = {
@@ -204,7 +204,7 @@ const AdminPopupNotices = () => {
               <td className="border px-4 py-2">{n.notice_name}</td>
               <td className="border px-4 py-2">
                 <img
-                  src={`http://localhost:8080/${n.image_url}`}
+                  src={`https://slbbl-website-backend-version1.onrender.com/${n.image_url}`}
                   alt="popup"
                   className="h-20 object-contain"
                 />

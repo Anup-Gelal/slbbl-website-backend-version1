@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 const ITEMS_PER_PAGE = 6;
 
 const initialForm = {
@@ -216,7 +216,7 @@ const ProductAdminPage = () => {
           <div key={p.id} className="bg-white border rounded p-4 shadow">
             {p.icon && (
               <img
-                src={`http://localhost:8080/${p.icon.replace(/^\/+/, "")}`}
+                src={`https://slbbl-website-backend-version1.onrender.com/${p.icon.replace(/^\/+/, "")}`}
                 alt={p.title}
                 className="w-20 h-20 object-contain mb-2"
               />

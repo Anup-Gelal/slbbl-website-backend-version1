@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { SectionWrapper } from "../hoc";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
 const Modal = ({ staff, onClose }) => (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -14,7 +14,7 @@ const Modal = ({ staff, onClose }) => (
         ✕
       </button>
       <img
-        src={`http://localhost:8080/${staff.image}`}
+        src={`https://slbbl-website-backend-version1.onrender.com/${staff.image}`}
         alt={staff.name}
         className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
       />
@@ -92,7 +92,7 @@ const HeadOfficeStaff = () => {
                   >
                     {staff.image && (
                       <img
-                        src={`http://localhost:8080/${staff.image}`}
+                        src={`https://slbbl-website-backend-version1.onrender.com/${staff.image}`}
                         alt={staff.name}
                         className="w-20 h-20 rounded-full object-cover mb-3"
                       />

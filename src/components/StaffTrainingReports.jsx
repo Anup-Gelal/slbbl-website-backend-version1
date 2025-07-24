@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { SectionWrapper } from "../hoc";
 
-const API_BASE = "http://localhost:8080/api/v1";
-const FILE_BASE = "http://localhost:8080";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const FILE_BASE = "https://slbbl-website-backend-version1.onrender.com";
 const ITEMS_PER_PAGE = 6;
 
 const TrainingReportCard = ({ reportName, fileLink }) => {

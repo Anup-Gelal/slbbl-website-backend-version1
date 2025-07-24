@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
-const IMAGE_BASE = "http://localhost:8080/uploads/about/stats/";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const IMAGE_BASE = "https://slbbl-website-backend-version1.onrender.com/uploads/about/stats/";
 const ITEMS_PER_PAGE = 6;
 
 const AdminAboutStats = () => {

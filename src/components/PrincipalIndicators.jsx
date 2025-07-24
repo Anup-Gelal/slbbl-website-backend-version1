@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { SectionWrapper } from "../hoc";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8080/api/v1";
-const FILE_BASE = "http://localhost:8080";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
+const FILE_BASE = "https://slbbl-website-backend-version1.onrender.com";
 
 const IndicatorCard = ({ reportName, fileLink }) => {
   const fileUrl = `${FILE_BASE}${fileLink}`;

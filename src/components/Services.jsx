@@ -5,7 +5,7 @@ import { styles } from "../style";
 import { textVariant } from "../utils/motion"; 
 import { SectionWrapper } from "../hoc";
 
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://slbbl-website-backend-version1.onrender.com/api/v1";
 
 const ServiceCard = ({ title, icon, description }) => {
   const imgSrc = `${API_BASE.replace(/\/api\/v1\/?$/, "")}${icon}`;
