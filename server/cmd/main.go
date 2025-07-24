@@ -54,8 +54,8 @@ _, b, _, _ := runtime.Caller(0)
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"}, 
 	
-		AllowOrigins:     []string{"https://slbbl-banepa.onrender.com"},
-		AllowOrigins:     []string{"https://slbbl-frontend.onrender.com"},
+		//AllowOrigins:     []string{"https://slbbl-banepa.onrender.com"},
+		//AllowOrigins:     []string{"https://slbbl-frontend.onrender.com"},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
